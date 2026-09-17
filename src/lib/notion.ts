@@ -2,6 +2,7 @@ import { Client } from "@notionhq/client";
 import { GetDatabaseResponse, DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { cache } from "react";
 import { envConfig } from '@/config';
+import { localPreview } from './local-preview';
 import {
     Link,
     WebsiteConfig,
@@ -15,13 +16,17 @@ import {
 } from '@/types';
 
 export const notion = new Client({
-    auth: envConfig.NOTION_TOKEN
+    auth: envConfig.NOTION_TOKEN,
+    timeoutMs: 15000,
+    fetch: (url, init) => fetch(url, { ...init, cache: 'no-store', signal: AbortSignal.timeout(15000) })
 });
 
-export const revalidate = parseInt(process.env.REVALIDATE_TIME ?? '43200', 10);
+export const revalidate = parseInt(process.env.REVALIDATE_TIME ?? '300', 10);
 
 // 获取网址链接
 export const getLinks = cache(async () => {
+    const preview = await localPreview();
+    if (preview) return preview.links;
     const databaseId = envConfig.NOTION_LINKS_DB_ID!;
     const allLinks: Link[] = [];
     let hasMore = true;
@@ -77,6 +82,8 @@ export const getLinks = cache(async () => {
 
 // 获取网站配置
 export const getWebsiteConfig = cache(async () => {
+    const preview = await localPreview();
+    if (preview) return preview.config;
     try {
         const response = await notion.databases.query({
             database_id: envConfig.NOTION_WEBSITE_CONFIG_ID!,
@@ -115,6 +122,8 @@ export const getWebsiteConfig = cache(async () => {
         // 将配置对象转换为 WebsiteConfig 类型
         // 注意：这里我们保留原有逻辑，将动态获取的配置与默认值合并
         const config: WebsiteConfig = {
+            WEATHER_CITY: configMap.WEATHER_CITY ?? '上海',
+            NOTES_DATABASE_ID: configMap.NOTES_DATABASE_ID ?? '',
             // 基础配置
             SITE_TITLE: configMap.SITE_TITLE ?? '我的导航',
             SITE_DESCRIPTION: configMap.SITE_DESCRIPTION ?? '个人导航网站',
@@ -143,11 +152,13 @@ export const getWebsiteConfig = cache(async () => {
         return config;
     } catch (error) {
         console.error('获取网站配置失败:', error);
-        throw new Error('获取网站配置失败');
+        return { SITE_TITLE: 'KING 工作基地', SITE_DESCRIPTION: '个人导航与工作基地' } as WebsiteConfig;
     }
 });
 
 export const getCategories = cache(async (): Promise<Category[]> => {
+    const preview = await localPreview();
+    if (preview) return preview.categories;
     const databaseId = envConfig.NOTION_CATEGORIES_DB_ID;
 
     if (!databaseId) {
