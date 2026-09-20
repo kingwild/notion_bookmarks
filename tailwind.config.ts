@@ -78,6 +78,8 @@ export default {
     },
   },
   plugins: [
+    // This plugin exposes a CommonJS factory.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('tailwind-scrollbar')({ nocompatible: true }),
   ],
 } satisfies Config;

@@ -1,4 +1,6 @@
 export const NEWS_SOURCES = [
+  { id: 'xiaohongshu', name: '小红书', label: '热搜榜', mark: '红', color: '#ef607a', group: 'social', url: 'https://www.xiaohongshu.com/explore' },
+  { id: '52pojie', name: '吾爱破解', label: '人气热门', mark: '吾', color: '#709785', group: 'tools', url: 'https://www.52pojie.cn/forum.php?mod=guide&view=hot' },
   { id: 'weibo', name: '微博', label: '实时热搜', mark: '微', color: '#ee684e', group: 'social', url: 'https://s.weibo.com/top/summary' },
   { id: 'baidu', name: '百度', label: '热搜榜', mark: '百', color: '#4773ee', group: 'social', url: 'https://top.baidu.com/board?tab=realtime' },
   { id: 'bilibili', name: '哔哩哔哩', label: '全站热门视频', mark: '哔', color: '#ec8fab', group: 'social', url: 'https://www.bilibili.com/v/popular/all' },
@@ -11,8 +13,8 @@ export const NEWS_SOURCES = [
 ] as const;
 
 export type NewsSourceId = typeof NEWS_SOURCES[number]['id'];
-export type NewsItem = { title: string; url: string; detail?: string };
-export type NewsFeed = { items: NewsItem[]; fetchedAt: string; status: 'ok' | 'unavailable' };
+export type NewsItem = { title: string; url: string; detail?: string; excerpt?: string };
+export type NewsFeed = { items: NewsItem[]; fetchedAt: string; status: 'ok' | 'unavailable'; message?: string };
 
 export function safeUrl(value: string, base?: string): string | null {
   try { const url = new URL(value, base); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; }
