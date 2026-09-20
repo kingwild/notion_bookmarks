@@ -43,6 +43,7 @@ export interface Link {
     iconfile: string;
     iconlink: string;
     tags: string[];
+    featured?: boolean;
 }
 
 // Type Guard
@@ -79,5 +80,6 @@ export function toLink(page: PageObjectResponse & { properties: NotionLinkProper
         iconfile: extractFileUrl(props.iconfile),
         iconlink: extractUrl(props.iconlink),
         tags: extractMultiSelect(props.Tags),
+        featured: '精选' in page.properties && page.properties['精选'].type === 'checkbox' ? page.properties['精选'].checkbox : false,
     };
 }
