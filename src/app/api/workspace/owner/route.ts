@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkPassword, issueSession } from '@/lib/workspace-owner-crypto';
 import { isOwner, OWNER_COOKIE, ownerSettings, readBody, sameOrigin } from '@/lib/workspace-owner';
+import { aiConfigured } from '@/lib/workspace-ai';
 
 export const dynamic = 'force-dynamic';
 const attempts = new Map<string, { count: number; until: number }>();
 export async function GET() {
-  try { return NextResponse.json({ owner: await isOwner(), aiReady: Boolean(process.env.AI_API_KEY && process.env.AI_BASE_URL && process.env.AI_MODEL) }, { headers: { 'Cache-Control': 'private, no-store' } }); }
+  try { return NextResponse.json({ owner: await isOwner(), aiReady: aiConfigured() }, { headers: { 'Cache-Control': 'private, no-store' } }); }
   catch { return NextResponse.json({ owner: false, aiReady: false }); }
 }
 export async function POST(request: NextRequest) {

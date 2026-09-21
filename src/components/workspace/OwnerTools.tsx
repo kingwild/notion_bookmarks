@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { X, ShieldCheck, Sparkles, Plus, Send } from 'lucide-react';
 import { shanghaiDay } from '@/lib/workspace-task-dates';
 import { CaptureItem, validateCapture } from '@/lib/workspace-validation';
@@ -8,7 +8,8 @@ export async function workspaceJson<T>(url: string, options?: RequestInit): Prom
   const response = await fetch(url, { ...options, signal: options?.signal || AbortSignal.timeout(90000) });
   const data = await response.json(); if (!response.ok) throw new Error(data.error || '请求失败，请重试'); return data;
 }
-export function OwnerLogin({ owner, onChange }: { owner: boolean; onChange: () => void }) {
+export function OwnerLogin({ owner, onChange, label }: { owner: boolean; onChange: () => void; label?: string }) {
+  const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const [password, setPassword] = useState(''), [error, setError] = useState(''), [busy, setBusy] = useState(false);
   async function login() {
@@ -16,7 +17,7 @@ export function OwnerLogin({ owner, onChange }: { owner: boolean; onChange: () =
     try { await workspaceJson('/api/workspace/owner', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) }); setPassword(''); dialog.current?.close(); onChange(); }
     catch (e) { setError(e instanceof Error ? e.message : '登录失败'); } finally { setBusy(false); }
   }
-  return <><button className="ws-text-button ws-owner-button" onClick={async () => { if (!owner) { dialog.current?.showModal(); return; } try { await workspaceJson('/api/workspace/owner', { method: 'DELETE' }); onChange(); } catch { setError('退出失败，请重试'); dialog.current?.showModal(); } }}><ShieldCheck size={15} />{owner ? '退出管理' : '站主管理'}</button><dialog ref={dialog} className="ws-dialog" aria-labelledby="owner-dialog-title" onClose={() => { setPassword(''); setError(''); }}><button className="ws-dialog-close" aria-label="关闭登录" onClick={() => dialog.current?.close()}><X size={18} /></button><span className="ws-eyebrow">YOUR PRIVATE WORKSPACE</span><h2 id="owner-dialog-title">站主管理</h2><p className="ws-muted">登录后可同步自选、调整精选，并整理个人随手记。</p><form onSubmit={e => { e.preventDefault(); void login(); }}><label htmlFor="owner-password">管理口令</label><input id="owner-password" type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} maxLength={200} required /><button className="ws-primary" disabled={busy}>{busy ? '正在登录…' : '登录'}</button></form><p role="status">{error}</p></dialog></>;
+  return <><button className="ws-text-button ws-owner-button" onClick={async () => { if (!owner) { dialog.current?.showModal(); return; } try { await workspaceJson('/api/workspace/owner', { method: 'DELETE' }); onChange(); } catch { setError('退出失败，请重试'); dialog.current?.showModal(); } }}><ShieldCheck size={15} />{owner ? '退出管理' : label || '站主管理'}</button><dialog ref={dialog} className="ws-dialog" aria-labelledby={`owner-dialog-${id}`} onClose={() => { setPassword(''); setError(''); }}><button className="ws-dialog-close" aria-label="关闭登录" onClick={() => dialog.current?.close()}><X size={18} /></button><span className="ws-eyebrow">YOUR PRIVATE WORKSPACE</span><h2 id={`owner-dialog-${id}`}>站主管理</h2><p className="ws-muted">登录后可同步自选、调整精选，并整理个人随手记。</p><form onSubmit={e => { e.preventDefault(); void login(); }}><label htmlFor={`owner-password-${id}`}>管理口令</label><input id={`owner-password-${id}`} type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} maxLength={200} required /><button className="ws-primary" disabled={busy}>{busy ? '正在登录…' : '登录'}</button></form><p role="status">{error}</p></dialog></>;
 }
 
 const kindLabels = { task: '待办事项', expense: '记账 · 支出', income: '记账 · 收入', idea: '想法' };
