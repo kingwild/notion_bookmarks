@@ -13,7 +13,7 @@ export const NEWS_SOURCES = [
 
 export type NewsSourceId = typeof NEWS_SOURCES[number]['id'];
 export type NewsItem = { title: string; url: string; detail?: string; excerpt?: string };
-export type NewsFeed = { items: NewsItem[]; fetchedAt: string; status: 'ok' | 'unavailable'; message?: string };
+export type NewsFeed = { items: NewsItem[]; fetchedAt: string; status: 'ok' | 'unavailable'; message?: string; stale?: boolean; refreshAfter?: number };
 
 export function safeUrl(value: string, base?: string): string | null {
   try { const url = new URL(value, base); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; }

@@ -54,6 +54,12 @@ html:has(.king-workspace)::-webkit-scrollbar-button,html:has(.king-workspace) bo
 @media(max-width:600px){.king-workspace .ws-topbar nav{display:none}.king-workspace .ws-capture-fields{grid-template-columns:1fr}.king-workspace .ws-calendar-grid{gap:3px}}
 
 /* Inline reading keeps the selected story in its original place. */
+.king-workspace .ws-news-header-actions{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}.king-workspace .ws-news-header-actions>a{display:flex;color:var(--ws-muted)}
+.king-workspace .ws-feed-footer{flex-wrap:wrap;gap:7px}.king-workspace .ws-feed-footer p{width:100%;min-height:14px;font-size:10px;line-height:1.6}
+.king-workspace .ws-feature-help{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--ws-muted);padding:0 0 16px}.king-workspace .ws-feature-help button{color:var(--ws-blue)}
+.king-workspace .ws-link-wrap-owner{display:flex;flex-direction:column;border:1px solid var(--ws-line);border-radius:13px;background:var(--ws-solid);overflow:hidden}.king-workspace .ws-link-wrap-owner .ws-link{flex:1;height:auto;border:0;border-radius:0}.king-workspace .ws-link-wrap-owner .ws-link:hover{transform:none}
+.king-workspace .ws-feature-action{display:flex;align-items:center;justify-content:center;gap:6px;min-height:34px;width:100%;padding:7px 12px;border-top:1px solid var(--ws-line);color:var(--ws-muted);font-size:11px;background:var(--ws-soft)}.king-workspace .ws-feature-action:hover,.king-workspace .ws-feature-action.is-featured{color:var(--ws-blue);background:#8299eb13}
+@media(max-width:760px){.king-workspace .ws-feed-hint{font-size:10px}.king-workspace .ws-news-header-actions{gap:7px}}
 .king-workspace .ws-news-card ol li{display:grid;grid-template-columns:22px minmax(0,1fr);column-gap:10px;row-gap:10px}
 .king-workspace .ws-news-inline{grid-column:2;min-width:0;padding:14px;border:1px solid var(--ws-line);border-radius:12px;background:var(--ws-soft)}
 .king-workspace .ws-news-inline .ws-eyebrow{font-size:9px;letter-spacing:.5px}
