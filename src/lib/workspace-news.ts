@@ -16,10 +16,6 @@ export async function loadFeed(source: NewsSourceId): Promise<NewsItem[]> {
       const root = parse(await read('https://www.52pojie.cn/forum.php?mod=guide&view=hot'));
       items = root.querySelectorAll('a.xst').map(a => ({ title: a.text.trim(), url: safeUrl(a.getAttribute('href') || '', 'https://www.52pojie.cn/') || '' })); break;
     }
-    case 'xiaohongshu': {
-      const data = JSON.parse(await read('https://edith.xiaohongshu.com/api/sns/v1/search/hot_list'));
-      items = (data.data?.items || []).map((item: { title?: string; word?: string }) => ({ title: item.title || item.word || '', url: `https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(item.title || item.word || '')}` })); break;
-    }
     case 'weibo': {
       const data = JSON.parse(await read('https://weibo.com/ajax/statuses/hot_band'));
       items = (data.data?.band_list || []).filter((item: { is_ad?: boolean }) => !item.is_ad).map((item: { note: string; num: number }) => ({ title: item.note, url: `https://s.weibo.com/weibo?q=${encodeURIComponent(item.note)}`, detail: heat(item.num) })); break;

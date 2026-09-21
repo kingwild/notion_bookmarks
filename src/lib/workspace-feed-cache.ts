@@ -9,7 +9,7 @@ export function cachedFeed(source: NewsSourceId): Promise<NewsFeed> {
     return { items, fetchedAt: new Date().toISOString(), status: 'ok' as const };
   }).catch(() => {
     const entry = feeds.get(source); if (entry) entry.until = Date.now() + 30000;
-    return { items: [], fetchedAt: new Date().toISOString(), status: 'unavailable' as const, message: source === 'xiaohongshu' ? '公开热榜接口暂不可用，原站可能要求登录' : '暂时无法读取榜单，请稍后重试' };
+    return { items: [], fetchedAt: new Date().toISOString(), status: 'unavailable' as const, message: '暂时无法读取榜单，请稍后重试' };
   });
   feeds.set(source, { until: Date.now() + 300000, promise }); return promise;
 }
