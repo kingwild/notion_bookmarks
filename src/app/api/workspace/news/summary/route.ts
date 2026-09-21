@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   let cached = summaries.get(key);
   if (!cached || cached.until <= Date.now()) {
     if (summaries.size >= 600) summaries.delete(summaries.keys().next().value!);
-    cached = { until: Date.now() + 300000, value: newsOverview(item) }; summaries.set(key, cached);
+    cached = { until: Date.now() + 300000, value: newsOverview(item, source.id) }; summaries.set(key, cached);
   }
   return NextResponse.json({ ...await cached.value, url: item.url, title: item.title, source: source.name }, { headers: { 'Cache-Control': 'no-store' } });
 }

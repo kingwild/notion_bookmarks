@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { notion } from '@/lib/notion';
-import { privateSetting, readBody, requireOwner } from '@/lib/workspace-owner';
+import { isOwner, privateSetting, readBody, requireOwner } from '@/lib/workspace-owner';
 import { validateStocks } from '@/lib/workspace-validation';
 
 export const dynamic = 'force-dynamic';
 export async function GET() {
-  try { const setting = await privateSetting('WORKSPACE_STOCKS'); return NextResponse.json({ stocks: setting ? validateStocks(JSON.parse(setting.value)) : null, revision: setting?.revision || '' }, { headers: { 'Cache-Control': 'no-store' } }); }
+  try {
+    if (!await isOwner()) return NextResponse.json({ error: '请先登录站主管理' }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
+    const setting = await privateSetting('WORKSPACE_STOCKS'); return NextResponse.json({ stocks: setting ? validateStocks(JSON.parse(setting.value)) : null, revision: setting?.revision || '' }, { headers: { 'Cache-Control': 'private, no-store' } });
+  }
   catch { return NextResponse.json({ error: '自选同步暂时不可用' }, { status: 503 }); }
 }
 export async function PUT(request: NextRequest) {
