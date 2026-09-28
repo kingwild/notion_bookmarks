@@ -86,3 +86,39 @@ html:has(.king-workspace)::-webkit-scrollbar-button,html:has(.king-workspace) bo
 .king-workspace .ws-calendar-agenda button[aria-pressed=true]{color:var(--ws-blue);background:var(--ws-soft)}
 .king-workspace .ws-calendar-footnote{margin-top:16px;font-size:10px;color:var(--ws-muted)}
 @media(max-width:760px){.king-workspace .ws-calendar-detail h3{margin:0 0 8px}.king-workspace .ws-calendar-detail{max-height:360px}.king-workspace .ws-overview-public{grid-template-columns:1fr 1fr}}
+
+/* Workspace appearance is independent of the legacy template theme. */
+html:has(.king-workspace){color-scheme:light;background:#f5f5f7;--king-scroll-track:#dce0e7;--king-scroll-thumb:#697386}
+html.king-dark:has(.king-workspace){color-scheme:dark;background:#13161d;--king-scroll-track:#1b202c;--king-scroll-thumb:#636e83}
+html:has(.king-workspace),html:has(.king-workspace) body,.king-workspace *{scrollbar-width:thin;scrollbar-color:var(--king-scroll-thumb) var(--king-scroll-track)}
+html:has(.king-workspace)::-webkit-scrollbar-track,html:has(.king-workspace) body::-webkit-scrollbar-track,.king-workspace *::-webkit-scrollbar-track{background:var(--king-scroll-track)}
+html:has(.king-workspace)::-webkit-scrollbar-thumb,html:has(.king-workspace) body::-webkit-scrollbar-thumb,.king-workspace *::-webkit-scrollbar-thumb{background:var(--king-scroll-thumb);border:0;border-radius:20px}
+.king-workspace.ws-dark{color-scheme:dark;--ws-ink:#f5f6fa;--ws-muted:#b0b8ca}
+.king-workspace h1,.king-workspace h2,.king-workspace h3,.king-workspace strong{color:var(--ws-ink)}
+.king-workspace button{color:inherit}.king-workspace .ws-primary{color:#fff}
+.king-workspace input,.king-workspace select,.king-workspace textarea{color:var(--ws-ink)}
+.king-workspace .ws-task-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.king-workspace .ws-task-controls button{padding:7px 12px;border-radius:10px;background:var(--ws-soft);color:var(--ws-muted);font-size:12px}
+.king-workspace .ws-task-controls button[aria-pressed=true]{color:var(--ws-blue);box-shadow:inset 0 0 0 1px var(--ws-blue)}
+.king-workspace button.ws-task-state{flex-shrink:0;border:1.5px solid var(--ws-muted);color:var(--ws-ink);padding:0;width:24px;height:24px}
+.king-workspace button.ws-task-state:disabled{opacity:1}.king-workspace .ws-task.is-done .ws-task-state{border-color:#78bda4;color:#78bda4}
+.king-workspace .ws-link-actions{display:flex;align-items:stretch;background:var(--ws-soft);border-top:1px solid var(--ws-line)}
+.king-workspace .ws-link-actions .ws-feature-action{border-top:0;flex:1;padding:7px 6px;min-width:0}
+.king-workspace .ws-delete-link{display:flex;gap:4px;align-items:center;padding:7px 10px;font-size:11px;color:var(--ws-muted);border-left:1px solid var(--ws-line);white-space:nowrap}
+.king-workspace .ws-delete-link:hover{color:#e16a74;background:#e16a7412}
+.king-workspace .ws-daily-return{padding:12px 14px;margin:12px 0 6px;border-radius:12px;background:var(--ws-soft);display:grid;gap:4px}
+.king-workspace .ws-daily-return>span{font-size:11px;color:var(--ws-muted)}
+.king-workspace .ws-daily-return strong{font-size:20px;font-variant-numeric:tabular-nums;font-weight:600}
+.king-workspace .ws-daily-return small{font-size:9px;color:var(--ws-muted);font-weight:400}.king-workspace .ws-daily-return strong small{margin-left:6px}
+.king-workspace strong.ws-profit{color:#d44555}.king-workspace strong.ws-loss{color:#168260}
+.king-workspace.ws-dark strong.ws-profit{color:#ff8491}.king-workspace.ws-dark strong.ws-loss{color:#6cd6ae}
+.king-workspace .ws-holding-editor{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:9px 0}
+.king-workspace .ws-holding-editor label{flex:1;min-width:120px;font-size:11px}.king-workspace .ws-holding-editor input{display:block;margin-top:3px;width:100%;background:var(--ws-soft);border:1px solid var(--ws-line);border-radius:8px;padding:6px 9px;font-size:12px}
+.king-workspace .ws-holding-editor small{flex-basis:100%;font-size:10px;color:var(--ws-muted)}
+.king-workspace .ws-stock-editor{max-height:310px;overflow:auto;padding-right:5px}
+.king-workspace .ws-capture-fab{position:fixed;bottom:66px;right:20px;z-index:30;display:flex;align-items:center;gap:9px;padding:13px 19px;border-radius:30px;background:#526aab;color:#fff;box-shadow:0 8px 30px #1a275e35;font-size:13px}
+.king-workspace .ws-capture-fab:hover{background:#465f9f;transform:translateY(-2px)}
+.king-workspace .ws-capture-dialog{width:min(850px,calc(100vw - 24px));padding:0;max-height:88svh}
+.king-workspace .ws-capture-dialog .ws-dialog-close{z-index:2;top:12px;right:12px}
+.king-workspace .ws-capture-dialog .ws-owner-capture{border:0;margin:0;padding:42px 28px 24px;border-radius:0;box-shadow:none;background:var(--ws-solid)}
+@media(max-width:600px){.king-workspace .ws-task-controls button{padding:6px 8px;font-size:11px}.king-workspace .ws-tasks>.ws-section-heading{align-items:flex-start;flex-wrap:wrap}.king-workspace .ws-capture-fab{right:12px;bottom:56px;padding:12px 16px}.king-workspace .ws-capture-dialog .ws-owner-capture{padding:42px 18px 22px}.king-workspace .ws-capture-preview{grid-template-columns:1fr}}

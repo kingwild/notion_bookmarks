@@ -4,6 +4,7 @@ export interface StockIdentity {
   name: string;
   market: string;
   category?: StockCategory;
+  shares?: number;
 }
 
 export interface StockQuote extends StockIdentity {

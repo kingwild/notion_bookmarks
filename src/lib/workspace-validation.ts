@@ -4,7 +4,8 @@ export function validateStocks(value: unknown): StockIdentity[] | null {
   const seen = new Set<string>(); const result: StockIdentity[] = [];
   for (const stock of value) {
     if (!stock || typeof stock !== 'object' || typeof stock.secid !== 'string' || !/^(?:[01]\.\d{6}|116\.\d{5})$/.test(stock.secid) || seen.has(stock.secid) || stock.code !== stock.secid.split('.')[1] || typeof stock.name !== 'string' || !stock.name.trim() || stock.name.length > 60) return null;
-    seen.add(stock.secid); result.push({ secid: stock.secid, code: stock.code, name: stock.name.trim(), market: stock.secid.split('.')[0] });
+    if (stock.shares !== undefined && (typeof stock.shares !== 'number' || !Number.isFinite(stock.shares) || stock.shares < 0 || stock.shares > 1e9 || Math.abs(stock.shares * 10000 - Math.round(stock.shares * 10000)) > 0.001)) return null;
+    seen.add(stock.secid); result.push({ secid: stock.secid, code: stock.code, name: stock.name.trim(), market: stock.secid.split('.')[0], ...(stock.shares !== undefined ? { shares: stock.shares } : {}) });
   }
   return result;
 }
