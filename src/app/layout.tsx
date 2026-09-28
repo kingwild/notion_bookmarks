@@ -1,7 +1,5 @@
 import "./globals.css"
 import "qweather-icons/font/qweather-icons.css"
-import "@/themes/theme.css"
-import { ThemeProvider } from "@/components/ui/ThemeProvider"
 import { Metadata } from "next"
 import { Clarity } from "@/components/analytics/Clarity"
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics"
@@ -72,11 +70,9 @@ export default async function RootLayout({
         <GoogleAnalytics gaId={config.GA_ID || ''} />
       </head>
       <body>
-        <ThemeProvider>
           {children}
           <Analytics />
           <SpeedInsights />
-        </ThemeProvider>
       </body>
     </html>
   )

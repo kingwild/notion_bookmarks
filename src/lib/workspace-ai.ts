@@ -14,10 +14,12 @@ export function aiConfigured() { try { return aiProviders().length > 0; } catch 
 export async function aiText(system: string, content: string, options: { validate?: (value: string) => boolean } = {}) {
   const providers = aiProviders();
   if (!providers.length) throw new Error('AI 服务尚未配置，可以先手动整理并预览');
+  let limited = false;
   for (const provider of providers) {
     try {
       const response = await fetch(provider.url, { method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${provider.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: provider.model, messages: [{ role: 'system', content: system }, { role: 'user', content }], temperature: 0.2, max_tokens: 1800, stream: false, ...(provider.id === 'zhipu' ? { thinking: { type: 'disabled' } } : {}) }), signal: AbortSignal.timeout(18000), cache: 'no-store' });
       if (!response.ok) {
+        if (response.status === 429) limited = true;
         await response.body?.cancel();
         // Invalid input / moderation responses must not be retried on another provider.
         if (response.status >= 400 && response.status < 500 && ![401, 404, 408, 429].includes(response.status)) break;
@@ -29,5 +31,5 @@ export async function aiText(system: string, content: string, options: { validat
       return text.trim();
     } catch { /* Timeout, network failure, or malformed response: try the configured backup once. Never log private notes or keys. */ }
   }
-  throw new Error('AI 暂时无法完成整理，请稍后重试或手动整理；内容尚未保存');
+  throw new Error(limited ? 'AI 服务达到调用频率限制，请稍后重试或手动整理；内容尚未保存' : 'AI 暂时无法完成整理，请稍后重试或手动整理；内容尚未保存');
 }

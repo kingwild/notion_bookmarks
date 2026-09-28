@@ -56,7 +56,7 @@ test('Private read routes reject anonymous users before accessing Notion and dis
   }
   assert.equal(reads,0);
   owner=true;
-  const taskResponse=await taskRoute.GET(); assert.equal(taskResponse.status,200); assert.deepEqual((await taskResponse.json()).tasks,tasks);
+  const taskResponse=await taskRoute.GET(new (require("next/server").NextRequest)("https://site.test/api/workspace/tasks?days=7")); assert.equal(taskResponse.status,200); assert.deepEqual((await taskResponse.json()).tasks,tasks);
   const preferenceResponse=await preferenceRoute.GET(); assert.equal(preferenceResponse.status,200); assert.match(preferenceResponse.headers.get('cache-control'),/private, no-store/);
   assert.equal(reads,2);
 });
