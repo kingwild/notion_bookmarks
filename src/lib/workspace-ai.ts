@@ -15,21 +15,39 @@ export async function aiText(system: string, content: string, options: { validat
   const providers = aiProviders();
   if (!providers.length) throw new Error('AI 服务尚未配置，可以先手动整理并预览');
   let limited = false;
+  let overloaded = false, unauthorized = false;
   for (const provider of providers) {
+    for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const response = await fetch(provider.url, { method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${provider.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: provider.model, messages: [{ role: 'system', content: system }, { role: 'user', content }], temperature: 0.2, max_tokens: 1800, stream: false, ...(provider.id === 'zhipu' ? { thinking: { type: 'disabled' } } : {}) }), signal: AbortSignal.timeout(18000), cache: 'no-store' });
       if (!response.ok) {
         if (response.status === 429) limited = true;
-        await response.body?.cancel();
+        if (response.status === 401) unauthorized = true;
+        const error = await response.json().catch(() => null);
+        const busy = provider.id === 'zhipu' && response.status === 429 && String(error?.error?.code) === '1305';
+        if (busy) overloaded = true;
+        // Retry temporary model overload once, respecting the provider's delay.
+        // Account rate limits and policy responses are never retried here.
+        const header = response.headers.get('retry-after');
+        const wait = header === null ? 1500 : /^\d+$/.test(header) ? Number(header) * 1000 : Date.parse(header) - Date.now();
+        if (busy && attempt === 0 && Number.isFinite(wait) && wait >= 0 && wait <= 5000) {
+          await new Promise(resolve => setTimeout(resolve, Math.max(1500, wait)));
+          continue;
+        }
         // Invalid input / moderation responses must not be retried on another provider.
-        if (response.status >= 400 && response.status < 500 && ![401, 404, 408, 429].includes(response.status)) break;
-        continue;
+        if (response.status >= 400 && response.status < 500 && ![401, 404, 408, 429].includes(response.status)) throw new AIPolicyError();
+        break;
       }
       const result = await response.json(); const choice = result.choices?.[0], text = choice?.message?.content;
-      if (choice?.finish_reason === 'content_filter' || choice?.message?.refusal) break;
-      if (choice?.finish_reason === 'length' || typeof text !== 'string' || !text.trim() || (options.validate && !options.validate(text))) continue;
+      if (choice?.finish_reason === 'content_filter' || choice?.message?.refusal) throw new AIPolicyError();
+      if (choice?.finish_reason === 'length' || typeof text !== 'string' || !text.trim() || (options.validate && !options.validate(text))) break;
       return text.trim();
-    } catch { /* Timeout, network failure, or malformed response: try the configured backup once. Never log private notes or keys. */ }
+    } catch (error) {
+      if (error instanceof AIPolicyError) throw new Error('AI 无法处理这段内容，请调整后重试或手动整理；内容尚未保存');
+      break; // Network / invalid response: move to the configured backup, without logging private content.
+    }
+    }
   }
-  throw new Error(limited ? 'AI 服务达到调用频率限制，请稍后重试或手动整理；内容尚未保存' : 'AI 暂时无法完成整理，请稍后重试或手动整理；内容尚未保存');
+  throw new Error(overloaded ? '智谱模型当前繁忙；请稍后再试或手动整理，内容尚未保存' : limited ? 'AI 服务达到调用频率限制，请稍后重试或手动整理；内容尚未保存' : unauthorized ? 'AI 密钥验证失败，请站主检查服务端配置；内容尚未保存' : 'AI 暂时无法完成整理，请稍后重试或手动整理；内容尚未保存');
 }
+class AIPolicyError extends Error {}

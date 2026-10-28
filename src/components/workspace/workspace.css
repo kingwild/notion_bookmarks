@@ -88,8 +88,8 @@ html:has(.king-workspace)::-webkit-scrollbar-button,html:has(.king-workspace) bo
 @media(max-width:760px){.king-workspace .ws-calendar-detail h3{margin:0 0 8px}.king-workspace .ws-calendar-detail{max-height:360px}.king-workspace .ws-overview-public{grid-template-columns:1fr 1fr}}
 
 /* Workspace appearance is independent of the legacy template theme. */
-html:has(.king-workspace){color-scheme:light;background:#f5f5f7;--king-scroll-track:#dce0e7;--king-scroll-thumb:#697386}
-html.king-dark:has(.king-workspace){color-scheme:dark;background:#13161d;--king-scroll-track:#1b202c;--king-scroll-thumb:#636e83}
+html:has(.king-workspace){color-scheme:light;background:#f5f5f7;--king-scroll-track:#ffffff;--king-scroll-thumb:#d8dbe1}
+html.king-dark:has(.king-workspace){color-scheme:dark;background:#13161d;--king-scroll-track:#f5f5f7;--king-scroll-thumb:#d8dbe1}
 html:has(.king-workspace),html:has(.king-workspace) body,.king-workspace *{scrollbar-width:thin;scrollbar-color:var(--king-scroll-thumb) var(--king-scroll-track)}
 html:has(.king-workspace)::-webkit-scrollbar-track,html:has(.king-workspace) body::-webkit-scrollbar-track,.king-workspace *::-webkit-scrollbar-track{background:var(--king-scroll-track)}
 html:has(.king-workspace)::-webkit-scrollbar-thumb,html:has(.king-workspace) body::-webkit-scrollbar-thumb,.king-workspace *::-webkit-scrollbar-thumb{background:var(--king-scroll-thumb);border:0;border-radius:20px}

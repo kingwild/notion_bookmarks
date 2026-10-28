@@ -4,6 +4,7 @@ import { readBody, requireOwner } from '@/lib/workspace-owner';
 import { aiText } from '@/lib/workspace-ai';
 import { shanghaiDay } from '@/lib/workspace-task-dates';
 import { validDate } from '@/lib/workspace-validation';
+export const maxDuration = 60;
 
 function parsePreview(value: string): { kind: string; title: string; date?: string; amount?: string }[] {
   const parsed = JSON.parse(value.replace(/^\s*```(?:json)?\s*/, '').replace(/\s*```\s*$/, ''));

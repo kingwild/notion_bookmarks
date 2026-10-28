@@ -46,6 +46,7 @@ test('Private read routes reject anonymous users before accessing Notion and dis
     if (id === '@/lib/workspace-tasks') return { getTodayTasks:async()=>{reads++;return tasks} };
     if (id === '@/lib/notion') return {notion:{}};
     if (id === '@/lib/workspace-validation') return require('./workspace-validation');
+    if (id === '@/lib/workspace-stock-settings') return require('./workspace-stock-settings');
     return original.call(this,id,...args);
   };
   let taskRoute, preferenceRoute;

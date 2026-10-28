@@ -1,6 +1,7 @@
 import type { StockIdentity } from '@/types/stock';
+export const MAX_STOCKS = 100;
 export function validateStocks(value: unknown): StockIdentity[] | null {
-  if (!Array.isArray(value) || value.length < 1 || value.length > 10) return null;
+  if (!Array.isArray(value) || value.length < 1 || value.length > MAX_STOCKS) return null;
   const seen = new Set<string>(); const result: StockIdentity[] = [];
   for (const stock of value) {
     if (!stock || typeof stock !== 'object' || typeof stock.secid !== 'string' || !/^(?:[01]\.\d{6}|116\.\d{5})$/.test(stock.secid) || seen.has(stock.secid) || stock.code !== stock.secid.split('.')[1] || typeof stock.name !== 'string' || !stock.name.trim() || stock.name.length > 60) return null;
