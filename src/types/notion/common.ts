@@ -32,7 +32,7 @@ export function extractTitle(property: TitlePropertyItemObjectResponse | unknown
 export function extractRichText(property: RichTextPropertyItemObjectResponse | unknown): string {
     const p = property as RichTextPropertyItemObjectResponse;
     if (!p?.rich_text || !Array.isArray(p.rich_text)) return '';
-    return p.rich_text[0]?.plain_text ?? '';
+    return p.rich_text.map(item => item.plain_text ?? '').join('');
 }
 
 export function extractFileUrl(property: FilesPropertyItemObjectResponse | unknown): string {
