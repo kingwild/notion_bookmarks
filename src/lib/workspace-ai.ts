@@ -11,26 +11,37 @@ export function aiProviders(env: Record<string, string | undefined> = process.en
   return providers;
 }
 export function aiConfigured() { try { return aiProviders().length > 0; } catch { return false; } }
-export async function aiText(system: string, content: string, options: { validate?: (value: string) => boolean } = {}) {
+export async function aiText(system: string, content: string, options: { validate?: (value: string) => boolean; allowFlashFallback?: boolean; onModel?: (model: string) => void } = {}) {
   const providers = aiProviders();
   if (!providers.length) throw new Error('AI 服务尚未配置，可以先手动整理并预览');
+  const zhipu = providers.find(provider => provider.id === 'zhipu');
+  if (options.allowFlashFallback && zhipu) providers.push({ ...zhipu, model: 'glm-4-flash' });
+  const deadline = Date.now() + 48000;
+  let skipFlash = false;
   let limited = false;
   let overloaded = false, unauthorized = false;
   for (const provider of providers) {
+    if (provider.model === 'glm-4-flash' && skipFlash) continue;
     for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const response = await fetch(provider.url, { method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${provider.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: provider.model, messages: [{ role: 'system', content: system }, { role: 'user', content }], temperature: 0.2, max_tokens: 1800, stream: false, ...(provider.id === 'zhipu' ? { thinking: { type: 'disabled' } } : {}) }), signal: AbortSignal.timeout(18000), cache: 'no-store' });
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      const timeout = options.allowFlashFallback && provider.model === 'glm-4.7-flash' ? 12000 : 18000;
+      const response = await fetch(provider.url, { method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${provider.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: provider.model, messages: [{ role: 'system', content: system }, { role: 'user', content }], temperature: 0.2, max_tokens: 1800, stream: false, ...(provider.id === 'zhipu' && provider.model !== 'glm-4-flash' ? { thinking: { type: 'disabled' } } : {}) }), signal: AbortSignal.timeout(Math.min(timeout, remaining)), cache: 'no-store' });
       if (!response.ok) {
         if (response.status === 429) limited = true;
         if (response.status === 401) unauthorized = true;
         const error = await response.json().catch(() => null);
         const busy = provider.id === 'zhipu' && response.status === 429 && String(error?.error?.code) === '1305';
+        // A second model must not bypass account limits or invalid credentials.
+        if (provider.id === 'zhipu' && (response.status === 401 || (response.status === 429 && !busy))) skipFlash = true;
         if (busy) overloaded = true;
         // Retry temporary model overload once, respecting the provider's delay.
         // Account rate limits and policy responses are never retried here.
         const header = response.headers.get('retry-after');
         const wait = header === null ? 1500 : /^\d+$/.test(header) ? Number(header) * 1000 : Date.parse(header) - Date.now();
-        if (busy && attempt === 0 && Number.isFinite(wait) && wait >= 0 && wait <= 5000) {
+        if (provider.id === 'zhipu' && header !== null && wait > 0) skipFlash = true;
+        if (!options.allowFlashFallback && busy && attempt === 0 && Number.isFinite(wait) && wait >= 0 && wait <= 5000) {
           await new Promise(resolve => setTimeout(resolve, Math.max(1500, wait)));
           continue;
         }
@@ -41,6 +52,7 @@ export async function aiText(system: string, content: string, options: { validat
       const result = await response.json(); const choice = result.choices?.[0], text = choice?.message?.content;
       if (choice?.finish_reason === 'content_filter' || choice?.message?.refusal) throw new AIPolicyError();
       if (choice?.finish_reason === 'length' || typeof text !== 'string' || !text.trim() || (options.validate && !options.validate(text))) break;
+      options.onModel?.(provider.model);
       return text.trim();
     } catch (error) {
       if (error instanceof AIPolicyError) throw new Error('AI 无法处理这段内容，请调整后重试或手动整理；内容尚未保存');
