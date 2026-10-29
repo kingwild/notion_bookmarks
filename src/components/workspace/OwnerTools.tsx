@@ -27,15 +27,15 @@ export function OwnerCapture({ aiReady, onSaved }: { aiReady: boolean; onSaved: 
   useEffect(() => { try { const draft = JSON.parse(localStorage.getItem('king:capture-draft') || 'null'); if (draft && typeof draft.text === 'string') { setText(draft.text); setOriginal(typeof draft.original === 'string' ? draft.original : draft.text); if (Array.isArray(draft.items)) setItems(draft.items.filter((item: CaptureItem) => item && typeof item.id === 'string' && typeof item.title === 'string' && Object.keys(kindLabels).includes(item.kind)).slice(0,10)); } } catch {} setReady(true); }, []);
   useEffect(() => { if (ready) try { localStorage.setItem('king:capture-draft', JSON.stringify({ text, original, items })); } catch {} }, [text, original, items, ready]);
   async function preview() {
-    setBusy(true); setStatus('');
-    try { const data = await workspaceJson<{ items: CaptureItem[] }>('/api/workspace/capture/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }); setItems(data.items); setOriginal(text); setStatus('已生成预览，请核对分类、日期和金额后确认保存。'); }
+    setBusy(true); setStatus('正在整理，模型繁忙时会自动切换，请稍候…');
+    try { const data = await workspaceJson<{ items: CaptureItem[]; model?: string }>('/api/workspace/capture/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }); setItems(data.items); setOriginal(text); setStatus(`已由 ${data.model || 'AI'} 生成预览，请核对分类、日期和金额后确认保存。`); }
     catch(e) { setStatus(e instanceof Error ? e.message : '整理失败'); } finally { setBusy(false); }
   }
   function addManual() { if (!items.length) setOriginal(text); setItems(previous => [...previous, { id: crypto.randomUUID(), kind: 'task', title: items.length ? '' : text.slice(0,200), date: shanghaiDay(), amount: '' }]); }
   function edit(id: string, patch: Partial<CaptureItem>) { setItems(previous => previous.map(item => item.id === id ? { ...item, ...patch } : item)); }
   async function save() {
     if (items.some(item => !item.savedUrl && !validateCapture(item))) { setStatus('请检查每条标题、日期和金额；收支金额必须大于 0，最多两位小数。'); return; }
-    setBusy(true); setStatus(''); let saved = 0, failed = 0;
+    setBusy(true); setStatus('正在保存到 Notion…'); let saved = 0, failed = 0;
     for (const item of items.filter(item => !item.savedUrl)) {
       try { const result = await workspaceJson<{ url: string }>('/api/workspace/capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ item, original: original || text }) }); edit(item.id, { savedUrl: result.url }); saved++; }
       catch(e) { failed++; setStatus(e instanceof Error ? e.message : '保存失败'); break; }
