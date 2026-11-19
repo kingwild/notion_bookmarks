@@ -39,7 +39,7 @@ test('Owner write routes reject unauthorized and foreign-database records; compl
   function load(file:string) {
     const code=transpileModule(readFileSync(file,'utf8'),{compilerOptions:{module:ModuleKind.CommonJS}}).outputText;
     const exports:Record<string,(r:InstanceType<typeof NextRequest>)=>Promise<Response>>={};
-    const imports:Record<string,unknown>={'next/server':{NextRequest,NextResponse},'next/cache':{revalidatePath:()=>{}},'@/lib/notion':{notion},'@/lib/workspace-tasks':{TASK_DATABASE_ID:db},'@/lib/workspace-owner':{requireOwner:async()=>denied?NextResponse.json({error:'denied'},{status:denied}):null,readBody:(r:Request)=>r.json()}};
+    const imports:Record<string,unknown>={'next/server':{NextRequest,NextResponse},'next/cache':{revalidatePath:()=>{}},'@/lib/notion':{notion},'@/lib/workspace-validation':require('./workspace-validation'),'@/lib/workspace-tasks':{TASK_DATABASE_ID:db},'@/lib/workspace-owner':{requireOwner:async()=>denied?NextResponse.json({error:'denied'},{status:denied}):null,readBody:(r:Request)=>r.json()}};
     new Function('require','exports',code)((key:string)=>{if (!(key in imports)) throw Error(key);return imports[key]},exports);return exports;
   }
   try {

@@ -4,8 +4,7 @@ import { shanghaiDay, addDays, isTaskInRange, type TodayTask } from './workspace
 
 export const TASK_DATABASE_ID = '201056cc-e99d-81a2-a7b8-cff3b7e7a45c';
 
-export async function getTodayTasks(days: 1 | 7 = 1): Promise<TodayTask[]> {
-  const today = shanghaiDay();
+export async function getTodayTasks(days: 1 | 7 = 1, today = shanghaiDay()): Promise<TodayTask[]> {
   const until = addDays(today, days - 1);
   const items: TodayTask[] = [];
   let cursor: string | undefined;

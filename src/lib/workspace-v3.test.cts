@@ -40,10 +40,11 @@ test('Private read routes reject anonymous users before accessing Notion and dis
   const Module = require('node:module');
   const original = Module._load;
   let owner = false, reads = 0;
+  let requested: unknown[] = [];
   const tasks = [{id:'test-task',title:'private task'}];
   Module._load = function(id: string, ...args: unknown[]) {
     if (id === '@/lib/workspace-owner') return { isOwner:async()=>owner, privateSetting:async()=>{reads++;return null} };
-    if (id === '@/lib/workspace-tasks') return { getTodayTasks:async()=>{reads++;return tasks} };
+    if (id === '@/lib/workspace-tasks') return { getTodayTasks:async(...params: unknown[])=>{requested=params;reads++;return tasks} };
     if (id === '@/lib/notion') return {notion:{}};
     if (id === '@/lib/workspace-validation') return require('./workspace-validation');
     if (id === '@/lib/workspace-stock-settings') return require('./workspace-stock-settings');
@@ -60,4 +61,12 @@ test('Private read routes reject anonymous users before accessing Notion and dis
   const taskResponse=await taskRoute.GET(new (require("next/server").NextRequest)("https://site.test/api/workspace/tasks?days=7")); assert.equal(taskResponse.status,200); assert.deepEqual((await taskResponse.json()).tasks,tasks);
   const preferenceResponse=await preferenceRoute.GET(); assert.equal(preferenceResponse.status,200); assert.match(preferenceResponse.headers.get('cache-control'),/private, no-store/);
   assert.equal(reads,2);
+  const { NextRequest } = require('next/server');
+  assert.equal((await taskRoute.GET(new NextRequest('https://site.test/api/workspace/tasks?date=2026-02-30'))).status,400);
+  assert.equal(reads,2);
+  const selected=await taskRoute.GET(new NextRequest('https://site.test/api/workspace/tasks?date=2026-12-31&days=7'));
+  assert.equal(selected.status,200); assert.deepEqual(requested,[1,'2026-12-31']);
+  owner=false;
+  assert.equal((await taskRoute.GET(new NextRequest('https://site.test/api/workspace/tasks?date=2026-12-31'))).status,401);
+  assert.equal(reads,3);
 });

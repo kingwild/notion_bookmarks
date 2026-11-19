@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTodayTasks, TASK_DATABASE_ID } from '@/lib/workspace-tasks';
 import { isOwner, requireOwner, readBody } from '@/lib/workspace-owner';
 import { notion } from '@/lib/notion';
+import { validDate } from '@/lib/workspace-validation';
 export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     if (!await isOwner()) return NextResponse.json({ error: '请先登录站主管理' }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
-    return NextResponse.json({ tasks: await getTodayTasks(request.nextUrl.searchParams.get('days') === '7' ? 7 : 1), updatedAt: new Date().toISOString() }, { headers: { 'Cache-Control': 'private, no-store' } });
+    const date = request.nextUrl.searchParams.get('date');
+    if (date !== null && !validDate(date)) return NextResponse.json({ error: '日期格式无效' }, { status: 400, headers: { 'Cache-Control': 'private, no-store' } });
+    return NextResponse.json({ tasks: await getTodayTasks(date ? 1 : request.nextUrl.searchParams.get('days') === '7' ? 7 : 1, date || undefined), updatedAt: new Date().toISOString() }, { headers: { 'Cache-Control': 'private, no-store' } });
   }
   catch (error) {
     const missing = error && typeof error === 'object' && 'code' in error && error.code === 'object_not_found';
