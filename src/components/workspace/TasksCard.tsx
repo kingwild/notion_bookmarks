@@ -28,6 +28,7 @@ export default function TasksCard({ refresh }: { refresh: number }) {
       version.current++;
       setTasks(previous => previous.map(item => item.id === task.id ? { ...item, status: result.status } : item));
       setUpdatedAt(new Date().toISOString());
+      window.dispatchEvent(new Event('king:tasks-changed'));
     } catch (e) { setError(e instanceof Error ? e.message : '同步失败'); }
     finally { lock.current = false; setBusy(''); setLoading(false); }
   }
